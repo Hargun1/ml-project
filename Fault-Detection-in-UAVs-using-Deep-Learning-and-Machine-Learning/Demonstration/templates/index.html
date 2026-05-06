@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html  lang="en" dir="ltr">
+<head>
+    <meta charset="utf-8">
+
+    <title>Niloy: Fault Detection </title>
+
+    <!-- Bootstraps Java Scipts Links -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+
+    <!-- JQuery links  -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+
+    <!--High CHART LIVE  -->
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="http://code.highcharts.com/highcharts-more.js"></script>
+    <script src="http://code.highcharts.com/modules/exporting.js"></script>
+
+    <!--Gauge  -->
+    <script type="text/javascript" src="http://pubnub.github.io/eon/lib/eon.js"></script>
+
+    <link rel="shortcut icon" type="image/ico" href="Images/favicon.ico">
+
+
+</head>
+
+<body>
+
+    <div class="jumbotron">
+        <h1 class="text-center text-black">Hargun 1m24ai025</h1>
+        <h1 class="text-center text-black">Error Detection and Diagnosis of Unmanned Aerial Vehicle using ML</h1>
+    </div>
+    <br>
+    <br>
+
+    <style>
+        form {
+            margin: auto;
+            width: 35%;
+        }
+        .result {
+            margin: auto;
+            width: 35%;
+            border: 2px solid #ccc;
+        }
+        #logo { 
+        position:fixed; 
+        top:0; 
+        left:0; 
+        }
+    </style>
+
+<style>
+    input[type=text], select {
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      display: inline-block;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    
+    input[type=submit] {
+      width: 100%;
+      background-color: #4CAF50;
+      color: white;
+      padding: 14px 20px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    input[type=submit]:hover {
+      background-color: #45a049;
+    }
+    
+
+    </style>
+
+    <!-- Disable Submit Button -->
+    <script>
+        $(":submit").closest("form").submit(function(){
+        $(':submit').attr('disabled', 'disabled');
+    });
+    </script>
+
+
+    <form action="{{ url_for('main') }}" method="POST">
+            <legend>Select Fault Type</legend>
+            <legend>Type in box below and Press Submit !!</legend>
+            <legend><span class="w3-tag w3-teal">All/Noise/Stuck At/Offset/Package Drop</span></legend>
+            <input type="text" name="selectedfault">
+            <input type="submit">
+    </form>
+
+    <div class="container mt-3">
+        <div class="card p-3">
+            <h4 class="mb-2">Demo Scenarios</h4>
+            <p class="mb-2">Use these buttons during presentation to simulate behavior narratives.</p>
+            <div class="scenario-wrap">
+                <button class="btn btn-outline-dark btn-sm scenario-btn active" data-scenario="live" onclick="setDemoScenario('live')">Live Model</button>
+                <button class="btn btn-outline-secondary btn-sm scenario-btn" data-scenario="normal" onclick="setDemoScenario('normal')">Normal Flight</button>
+                <button class="btn btn-outline-warning btn-sm scenario-btn" data-scenario="noise" onclick="setDemoScenario('noise')">Noise Fault</button>
+                <button class="btn btn-outline-info btn-sm scenario-btn" data-scenario="offset" onclick="setDemoScenario('offset')">Offset Fault</button>
+                <button class="btn btn-outline-primary btn-sm scenario-btn" data-scenario="stuck" onclick="setDemoScenario('stuck')">Stuck-At Fault</button>
+                <button class="btn btn-outline-danger btn-sm scenario-btn" data-scenario="packet_drop" onclick="setDemoScenario('packet_drop')">Packet Drop Fault</button>
+                <button class="btn btn-danger btn-sm scenario-btn" data-scenario="crash_risk" onclick="setDemoScenario('crash_risk')">Crash Risk</button>
+            </div>
+            <div id="scenario-status" class="mt-3 alert alert-info mb-0">
+                <strong>Mode:</strong> Live Model | <strong>Action:</strong> Monitoring only.
+            </div>
+        </div>
+    </div>
+
+    {% if error_message %}
+    <div class="container mt-3">
+        <div class="alert alert-danger" role="alert">
+            {{ error_message }}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="container-fluid">
+
+        <div class="row">
+
+            <div class="col-5 jumbotron p-2 mx-1">
+                <h2 class="sensor1"> Sensor : </h2>
+                
+
+            </div>
+
+            <br>
+            <br>
+
+            <div class="col-5 jumbotron p-2 mx-1">
+                <h2 class="sensor2">Sensor :</h2>
+            </div>
+            <br>
+
+
+            <style>
+                {
+                    box-sizing: border-box;
+                }
+                /* Set additional styling options for the columns*/
+                .column {
+                float: left;
+                width: 50%;
+                }
+            
+                .row:after {
+                content: "";
+                display: table;
+                clear: both;
+                }
+
+                .scenario-wrap {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                }
+                </style>
+        </div>
+
+        <div class="column">
+            <div id="data-AccX"></div>
+        </div>
+        <div class="column">
+            <div id="data-GyrX"></div>
+        </div>
+        </div>   
+
+    </div>
+
+    <style>
+
+        .jumbotron{
+            widows: 120px;
+            height: 120px;
+            justify-content: center;
+        }
+
+        .row{
+            justify-content: center;
+        }
+
+
+    </style>
+
+
+
+
+    <script>
+        var chartAccX;
+        var chartGyrX;
+        var currentScenario = "live";
+        var livePredMap = {
+            0: "Normal",
+            1: "Noise",
+            2: "Stuck-At",
+            3: "Offset",
+            4: "Packet Drop"
+        };
+
+        var demoScenarios = {
+            live: {
+                modeLabel: "Live Model",
+                statusClass: "alert-info",
+                action: "Monitoring only (real model output)."
+            },
+            normal: {
+                accLabel: "Normal",
+                gyrLabel: "Normal",
+                modeLabel: "Scenario: Normal Flight",
+                statusClass: "alert-success",
+                action: "Continue mission."
+            },
+            noise: {
+                accLabel: "Noise",
+                gyrLabel: "Noise",
+                modeLabel: "Scenario: Sensor Noise",
+                statusClass: "alert-warning",
+                action: "Activate sensor filtering and reduce aggressive maneuvers."
+            },
+            offset: {
+                accLabel: "Offset",
+                gyrLabel: "Offset",
+                modeLabel: "Scenario: Sensor Bias/Offset",
+                statusClass: "alert-warning",
+                action: "Apply recalibration or bias compensation policy."
+            },
+            stuck: {
+                accLabel: "Stuck-At",
+                gyrLabel: "Stuck-At",
+                modeLabel: "Scenario: Stuck Sensor",
+                statusClass: "alert-danger",
+                action: "Switch to backup estimate and prepare controlled landing."
+            },
+            packet_drop: {
+                accLabel: "Packet Drop",
+                gyrLabel: "Packet Drop",
+                modeLabel: "Scenario: Packet Drop",
+                statusClass: "alert-warning",
+                action: "Increase redundancy and hold stable hover."
+            },
+            crash_risk: {
+                accLabel: "Critical Fault",
+                gyrLabel: "Critical Fault",
+                modeLabel: "Scenario: Crash Risk",
+                statusClass: "alert-danger",
+                action: "Emergency response: return-to-home / controlled landing."
+            }
+        };
+
+        function setDemoScenario(scenario) {
+            currentScenario = scenario;
+
+            $(".scenario-btn").removeClass("active");
+            $(".scenario-btn[data-scenario='" + scenario + "']").addClass("active");
+        }
+
+        function resolveLiveLabel(value) {
+            if (livePredMap.hasOwnProperty(value)) {
+                return livePredMap[value];
+            }
+
+            if (!isNaN(Number(value)) && livePredMap.hasOwnProperty(Number(value))) {
+                return livePredMap[Number(value)];
+            }
+
+            return String(value);
+        }
+
+        function updateScenarioPanel(modeLabel, action, statusClass) {
+            var panel = $("#scenario-status");
+            panel.removeClass("alert-info alert-success alert-warning alert-danger");
+            panel.addClass(statusClass);
+            panel.html("<strong>Mode:</strong> " + modeLabel + " | <strong>Action:</strong> " + action);
+        }
+
+        function applyDisplayMode(liveAccPred, liveGyrPred) {
+            var scenario = demoScenarios[currentScenario];
+            var accLabel = resolveLiveLabel(liveAccPred);
+            var gyrLabel = resolveLiveLabel(liveGyrPred);
+
+            if (currentScenario !== "live") {
+                accLabel = scenario.accLabel;
+                gyrLabel = scenario.gyrLabel;
+            }
+
+            $(".sensor1").text("Acceleration Prediction : " + accLabel);
+            $(".sensor2").text("Gyroscope Prediction : " + gyrLabel);
+            updateScenarioPanel(scenario.modeLabel, scenario.action, scenario.statusClass);
+        }
+
+        function requestData()
+        {   var data3 = [];
+            var data4 = [];
+            // Ajax call to get the Data from Flask
+            var requests = $.get('/data');
+
+            var tm = requests.done(function (result)
+            {
+                // AccX
+                var seriesAccX = chartAccX.series[0],
+                    shiftAccX = seriesAccX.data.length > 20;
+
+                // GyrX
+                var seriesGyrX = chartGyrX.series[0],
+                    shiftGyrX = seriesAccX.data.length > 20;
+
+                // Add the Point
+                // Time AccX Prediction
+                var data1 = [];
+                data1.push(result[0]);
+                data1.push(result[1]);
+
+
+                // Add the Point
+                // Time GyrX Prediction
+                var data2 = [];
+                data2.push(result[0]);
+                data2.push(result[2]);
+
+
+                // Add the Point
+                // Time AccX
+                data3.push(result[0]);
+                data3.push(result[3]);
+
+                // Add the Point
+                // Time GyrX
+                data4.push(result[0]);
+                data4.push(result[4]);
+
+            
+
+                
+                chartAccX.series[0].setData(data3[1], true, true, true);
+                chartGyrX.series[0].setData(data4[1], true, true, true);
+                applyDisplayMode(data1[1], data2[1]);
+
+                // call it again after one certain time (1000 =  1 second)
+                setTimeout(requestData, 400);
+
+            });
+        }
+
+        $(document).ready(function()
+        {
+            // --------------Chart 1 ----------------------------
+            chartAccX = new Highcharts.Chart({
+                chart:
+                    {
+                    renderTo: 'data-AccX',
+                    defaultSeriesType: 'line',
+                    events: {
+                        load: requestData
+                            }
+                    },
+                title:
+                    {
+                    text: 'AccX'
+                    },
+                xAxis: {
+                    type: 'Linear'
+                        },
+                yAxis: {
+                    minPadding: 0.2,
+                    maxPadding: 0.2,
+                    title: {
+                        text: 'Value',
+                        margin: 80
+                            }
+                         },
+                series: [{
+                    color : '#c23d23',
+                    lineColor: '#303030',
+                    name: 'AccX',
+                    data:  []
+                }]
+            });
+            
+
+            chartGyrX = new Highcharts.Chart({
+                chart:
+                    {
+                        renderTo: 'data-GyrX',
+                        defaultSeriesType: 'line',
+                        events: {
+                            load: requestData
+                        }
+                    },
+                title:
+                    {
+                        text: 'GyrX'
+                    },
+                xAxis: {
+                    type: 'Linear'
+                },
+                yAxis: {
+                    minPadding: 0.2,
+                    maxPadding: 0.2,
+                    title: {
+                        text: 'Value',
+                        margin: 80
+                    }
+                },
+                series: [{
+                    lineColor: '#1d82b8',
+                    name: 'GyrX',
+                    data: []
+                }]
+            });
+
+
+        });
+    </script>
+
+
+
+<script>
+    class Image{
+
+        constructor(imgUrl, size)
+        {
+            this.imgUrl=imgUrl;
+            this.size=size;
+        }
+
+        backgroundImage()
+        {
+            console.log("inside function ")
+            // Select the Image
+            var img = document.querySelector(".jumbotron");
+
+            // create Css Text
+            var text = "margin:auto;"+
+                "background-image: url("+this.imgUrl+");" +
+                "background-size:cover;"+
+                "opacity:1;"+
+                "background-blend-mode: darken;"+
+                "height: "+ this.size + "vh;";
+
+            img.style.cssText =  text;
+        }
+
+        centerTitle()
+        {
+            /*
+                Center the Title
+             */
+            var t1 = document.querySelector("#title");
+            t1.classList.add("text-white");
+            t1.classList.add("text-center");
+            t1.classList.add("display-3");
+        }
+    }
+    const imgUrl = ''
+    const size = "38";
+    var obj = new Image(imgUrl, size);
+    obj.backgroundImage();
+    obj.centerTitle();
+    </script>
+</body>
+
+
+</html>
