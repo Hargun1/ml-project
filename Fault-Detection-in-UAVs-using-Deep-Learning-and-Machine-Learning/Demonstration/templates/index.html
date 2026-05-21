@@ -54,6 +54,160 @@
         top:0; 
         left:0; 
         }
+        body {
+            background: #f4f7fb;
+            color: #1d2733;
+        }
+        .flight-dashboard {
+            max-width: 1400px;
+        }
+        .drone-visual-panel {
+            background: #ffffff;
+            border: 1px solid #d9e2ec;
+            border-radius: 8px;
+            box-shadow: 0 10px 24px rgba(16, 24, 40, 0.08);
+            height: 100%;
+            overflow: hidden;
+        }
+        .drone-panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e4eaf1;
+            background: #fbfcfe;
+        }
+        .drone-panel-head h3 {
+            font-size: 1.15rem;
+            margin: 0;
+            font-weight: 700;
+        }
+        .flight-state-pill {
+            border-radius: 999px;
+            color: #ffffff;
+            font-weight: 700;
+            min-width: 118px;
+            padding: 7px 12px;
+            text-align: center;
+        }
+        .flight-state-normal {
+            background: #16825d;
+        }
+        .flight-state-watch {
+            background: #b36b00;
+        }
+        .flight-state-critical {
+            background: #bb2d3b;
+        }
+        .drone-canvas-wrap {
+            position: relative;
+            height: 430px;
+            min-height: 360px;
+            background: linear-gradient(180deg, #eaf4ff 0%, #f8fbff 56%, #edf1f6 100%);
+        }
+        #droneCanvas {
+            display: block;
+            height: 100%;
+            width: 100%;
+        }
+        .drone-hud {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            border-top: 1px solid #e4eaf1;
+            background: #ffffff;
+        }
+        .drone-hud-item {
+            border-right: 1px solid #e4eaf1;
+            padding: 12px 14px;
+        }
+        .drone-hud-item:last-child {
+            border-right: 0;
+        }
+        .hud-label {
+            color: #5d6c7c;
+            display: block;
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0;
+            text-transform: uppercase;
+        }
+        .hud-value {
+            color: #15202b;
+            display: block;
+            font-size: 1.05rem;
+            font-weight: 700;
+            line-height: 1.35;
+            min-height: 1.4em;
+        }
+        .response-log {
+            background: #ffffff;
+            border: 1px solid #d9e2ec;
+            border-radius: 8px;
+            height: 100%;
+            overflow: hidden;
+        }
+        .response-log h3 {
+            background: #fbfcfe;
+            border-bottom: 1px solid #e4eaf1;
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin: 0;
+            padding: 14px 16px;
+        }
+        .response-row {
+            display: flex;
+            gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 1px solid #edf1f5;
+        }
+        .response-row:last-child {
+            border-bottom: 0;
+        }
+        .response-dot {
+            border-radius: 50%;
+            flex: 0 0 12px;
+            height: 12px;
+            margin-top: 6px;
+            width: 12px;
+        }
+        .response-dot.normal {
+            background: #16825d;
+        }
+        .response-dot.watch {
+            background: #d28714;
+        }
+        .response-dot.critical {
+            background: #bb2d3b;
+        }
+        .response-row strong {
+            display: block;
+            font-size: 0.95rem;
+        }
+        .response-row span {
+            color: #5d6c7c;
+            display: block;
+            font-size: 0.88rem;
+            line-height: 1.35;
+        }
+        @media (max-width: 768px) {
+            form {
+                width: 92%;
+            }
+            .drone-panel-head {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+            .drone-canvas-wrap {
+                height: 340px;
+            }
+            .drone-hud {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .drone-hud-item {
+                border-bottom: 1px solid #e4eaf1;
+            }
+        }
     </style>
 
 <style>
@@ -127,6 +281,66 @@
         </div>
     </div>
     {% endif %}
+
+    <div class="container-fluid px-4 flight-dashboard mt-4">
+        <div class="row align-items-stretch">
+            <div class="col-lg-8 mb-3">
+                <section class="drone-visual-panel">
+                    <div class="drone-panel-head">
+                        <h3>Drone Flight Visual</h3>
+                        <div id="flightStatePill" class="flight-state-pill flight-state-normal">STABLE</div>
+                    </div>
+                    <div class="drone-canvas-wrap">
+                        <canvas id="droneCanvas" width="960" height="520"></canvas>
+                    </div>
+                    <div class="drone-hud">
+                        <div class="drone-hud-item">
+                            <span class="hud-label">Fault Mode</span>
+                            <span id="droneMode" class="hud-value">Live Model</span>
+                        </div>
+                        <div class="drone-hud-item">
+                            <span class="hud-label">Attitude</span>
+                            <span id="droneAttitude" class="hud-value">Level</span>
+                        </div>
+                        <div class="drone-hud-item">
+                            <span class="hud-label">Altitude</span>
+                            <span id="droneAltitude" class="hud-value">12.0 m</span>
+                        </div>
+                        <div class="drone-hud-item">
+                            <span class="hud-label">Controller Action</span>
+                            <span id="droneAction" class="hud-value">Monitoring</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="col-lg-4 mb-3">
+                <section class="response-log">
+                    <h3>Fault Response</h3>
+                    <div class="response-row">
+                        <div id="accResponseDot" class="response-dot normal"></div>
+                        <div>
+                            <strong id="accResponseTitle">Accelerometer: Normal</strong>
+                            <span id="accResponseText">Smooth translation and altitude hold.</span>
+                        </div>
+                    </div>
+                    <div class="response-row">
+                        <div id="gyrResponseDot" class="response-dot normal"></div>
+                        <div>
+                            <strong id="gyrResponseTitle">Gyroscope: Normal</strong>
+                            <span id="gyrResponseText">Roll and yaw remain stable.</span>
+                        </div>
+                    </div>
+                    <div class="response-row">
+                        <div id="missionResponseDot" class="response-dot normal"></div>
+                        <div>
+                            <strong id="missionResponseTitle">Mission Status: Nominal</strong>
+                            <span id="missionResponseText">Following the graph-driven trajectory.</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
 
     <div class="container-fluid">
 
@@ -203,6 +417,34 @@
         var chartAccX;
         var chartGyrX;
         var currentScenario = "live";
+        var droneVisual = {
+            canvas: null,
+            ctx: null,
+            width: 960,
+            height: 520,
+            x: 480,
+            y: 250,
+            targetX: 480,
+            targetY: 250,
+            roll: 0,
+            pitch: 0,
+            yaw: 0,
+            altitude: 12,
+            rotorPhase: 0,
+            shake: 0,
+            drop: 0,
+            packetBlink: 0,
+            trail: [],
+            modeLabel: "Live Model",
+            accLabel: "Normal",
+            gyrLabel: "Normal",
+            action: "Monitoring",
+            severity: "normal",
+            latestAcc: 0,
+            latestGyr: 0,
+            varianceAcc: 0,
+            varianceGyr: 0
+        };
         var livePredMap = {
             0: "Normal",
             1: "Noise",
@@ -261,6 +503,57 @@
             }
         };
 
+        var faultVisualProfiles = {
+            Normal: {
+                severity: "normal",
+                action: "Monitoring",
+                accText: "Smooth translation and altitude hold.",
+                gyrText: "Roll and yaw remain stable.",
+                missionTitle: "Mission Status: Nominal",
+                missionText: "Following the graph-driven trajectory."
+            },
+            Noise: {
+                severity: "watch",
+                action: "Filtering",
+                accText: "Small jitter is visible from noisy acceleration samples.",
+                gyrText: "Micro-oscillation shows noisy angular-rate readings.",
+                missionTitle: "Mission Status: Caution",
+                missionText: "Controller smooths the signal and reduces aggressive motion."
+            },
+            Offset: {
+                severity: "watch",
+                action: "Bias Trim",
+                accText: "Drone drifts from the path as bias accumulates.",
+                gyrText: "Attitude leans while the estimator compensates.",
+                missionTitle: "Mission Status: Caution",
+                missionText: "Bias correction is applied before continuing."
+            },
+            "Stuck-At": {
+                severity: "critical",
+                action: "Backup Estimate",
+                accText: "Motion freezes against stale acceleration readings.",
+                gyrText: "Rotor attitude locks until fallback estimation takes over.",
+                missionTitle: "Mission Status: Fault",
+                missionText: "Hold position and prepare controlled landing."
+            },
+            "Packet Drop": {
+                severity: "watch",
+                action: "Hold Hover",
+                accText: "Missing packets create stepped movement in the path.",
+                gyrText: "Updates pause briefly, then resume with correction.",
+                missionTitle: "Mission Status: Caution",
+                missionText: "Hover command holds position until data returns."
+            },
+            "Critical Fault": {
+                severity: "critical",
+                action: "Emergency Land",
+                accText: "Large deviation indicates unstable flight response.",
+                gyrText: "Attitude warning is active for unsafe rotation.",
+                missionTitle: "Mission Status: Critical",
+                missionText: "Return-to-home or controlled landing should be triggered."
+            }
+        };
+
         function setDemoScenario(scenario) {
             currentScenario = scenario;
 
@@ -300,6 +593,351 @@
             $(".sensor1").text("Acceleration Prediction : " + accLabel);
             $(".sensor2").text("Gyroscope Prediction : " + gyrLabel);
             updateScenarioPanel(scenario.modeLabel, scenario.action, scenario.statusClass);
+
+            droneVisual.modeLabel = scenario.modeLabel;
+            droneVisual.accLabel = accLabel;
+            droneVisual.gyrLabel = gyrLabel;
+            droneVisual.action = scenario.action;
+        }
+
+        function clamp(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        }
+
+        function lastNumber(values) {
+            if (!values || !values.length) {
+                return 0;
+            }
+
+            for (var index = values.length - 1; index >= 0; index--) {
+                var value = Number(values[index]);
+                if (isFinite(value)) {
+                    return value;
+                }
+            }
+
+            return 0;
+        }
+
+        function variance(values) {
+            if (!values || values.length < 2) {
+                return 0;
+            }
+
+            var numeric = values.map(Number).filter(isFinite);
+            if (numeric.length < 2) {
+                return 0;
+            }
+
+            var mean = numeric.reduce(function (sum, value) { return sum + value; }, 0) / numeric.length;
+            var total = numeric.reduce(function (sum, value) {
+                return sum + Math.pow(value - mean, 2);
+            }, 0);
+            return total / numeric.length;
+        }
+
+        function combinedFaultLabel(accLabel, gyrLabel) {
+            if (accLabel === "Critical Fault" || gyrLabel === "Critical Fault") {
+                return "Critical Fault";
+            }
+            if (accLabel !== "Normal") {
+                return accLabel;
+            }
+            if (gyrLabel !== "Normal") {
+                return gyrLabel;
+            }
+            return "Normal";
+        }
+
+        function profileForCurrentFault() {
+            var label = combinedFaultLabel(droneVisual.accLabel, droneVisual.gyrLabel);
+            return faultVisualProfiles[label] || faultVisualProfiles.Normal;
+        }
+
+        function setDotState(dotId, severity) {
+            var dot = $("#" + dotId);
+            dot.removeClass("normal watch critical");
+            dot.addClass(severity);
+        }
+
+        function updateDroneReadouts() {
+            var profile = profileForCurrentFault();
+            var stateText = profile.severity === "critical" ? "FAULT" : (profile.severity === "watch" ? "CAUTION" : "STABLE");
+            var pill = $("#flightStatePill");
+
+            pill.removeClass("flight-state-normal flight-state-watch flight-state-critical");
+            pill.addClass("flight-state-" + profile.severity);
+            pill.text(stateText);
+
+            $("#droneMode").text(droneVisual.modeLabel);
+            $("#droneAltitude").text(droneVisual.altitude.toFixed(1) + " m");
+            $("#droneAction").text(profile.action);
+
+            var rollText = Math.abs(droneVisual.roll) < 3 ? "Level" : (droneVisual.roll > 0 ? "Roll Right" : "Roll Left");
+            var pitchText = Math.abs(droneVisual.pitch) < 2 ? "" : (droneVisual.pitch > 0 ? " / Nose Up" : " / Nose Down");
+            $("#droneAttitude").text(rollText + pitchText);
+
+            var accSeverity = droneVisual.accLabel === "Normal" ? "normal" : profile.severity;
+            var gyrSeverity = droneVisual.gyrLabel === "Normal" ? "normal" : profile.severity;
+            setDotState("accResponseDot", accSeverity);
+            setDotState("gyrResponseDot", gyrSeverity);
+            setDotState("missionResponseDot", profile.severity);
+
+            $("#accResponseTitle").text("Accelerometer: " + droneVisual.accLabel);
+            $("#gyrResponseTitle").text("Gyroscope: " + droneVisual.gyrLabel);
+            $("#missionResponseTitle").text(profile.missionTitle);
+            $("#accResponseText").text(profile.accText);
+            $("#gyrResponseText").text(profile.gyrText);
+            $("#missionResponseText").text(profile.missionText);
+        }
+
+        function updateDroneFromGraph(accValues, gyrValues) {
+            var profile = profileForCurrentFault();
+            var acc = lastNumber(accValues);
+            var gyr = lastNumber(gyrValues);
+            var accEnergy = clamp(Math.sqrt(variance(accValues)) * 7, 0, 24);
+            var gyrEnergy = clamp(Math.sqrt(variance(gyrValues)) * 6, 0, 22);
+            var normalizedAcc = clamp(acc * 60, -130, 130);
+            var normalizedGyr = clamp(gyr * 80, -120, 120);
+            var centerX = droneVisual.width * 0.5;
+            var centerY = droneVisual.height * 0.52;
+
+            droneVisual.latestAcc = acc;
+            droneVisual.latestGyr = gyr;
+            droneVisual.varianceAcc = accEnergy;
+            droneVisual.varianceGyr = gyrEnergy;
+            droneVisual.shake = 0;
+            droneVisual.drop = 0;
+            droneVisual.packetBlink = 0;
+
+            if (currentScenario === "noise" || droneVisual.accLabel === "Noise" || droneVisual.gyrLabel === "Noise") {
+                droneVisual.shake = 10 + accEnergy + gyrEnergy;
+            }
+            if (currentScenario === "offset" || droneVisual.accLabel === "Offset" || droneVisual.gyrLabel === "Offset") {
+                normalizedAcc += 95;
+                normalizedGyr += 45;
+            }
+            if (currentScenario === "stuck" || droneVisual.accLabel === "Stuck-At" || droneVisual.gyrLabel === "Stuck-At") {
+                normalizedAcc *= 0.15;
+                normalizedGyr *= 0.12;
+            }
+            if (currentScenario === "packet_drop" || droneVisual.accLabel === "Packet Drop" || droneVisual.gyrLabel === "Packet Drop") {
+                droneVisual.packetBlink = Math.sin(Date.now() / 130) > 0 ? 1 : 0;
+                normalizedAcc = Math.round(normalizedAcc / 42) * 42;
+                normalizedGyr = Math.round(normalizedGyr / 38) * 38;
+            }
+            if (currentScenario === "crash_risk" || profile.severity === "critical" && droneVisual.accLabel === "Critical Fault") {
+                droneVisual.drop = 70;
+                droneVisual.shake = 28;
+                normalizedGyr += Math.sin(Date.now() / 110) * 90;
+            }
+
+            droneVisual.targetX = clamp(centerX + normalizedGyr, 135, droneVisual.width - 135);
+            droneVisual.targetY = clamp(centerY - normalizedAcc + droneVisual.drop, 105, droneVisual.height - 72);
+            droneVisual.roll = clamp(normalizedGyr * 0.12 + droneVisual.shake * Math.sin(Date.now() / 80) * 0.25, -24, 24);
+            droneVisual.pitch = clamp(-normalizedAcc * 0.045, -12, 12);
+            droneVisual.yaw = clamp(normalizedGyr * 0.03, -10, 10);
+            droneVisual.altitude = clamp(12 + (centerY - droneVisual.targetY) / 24, 2.5, 22);
+
+            updateDroneReadouts();
+        }
+
+        function resizeDroneCanvas() {
+            if (!droneVisual.canvas) {
+                return;
+            }
+
+            var rect = droneVisual.canvas.getBoundingClientRect();
+            var ratio = window.devicePixelRatio || 1;
+            droneVisual.width = Math.max(320, rect.width);
+            droneVisual.height = Math.max(280, rect.height);
+            droneVisual.canvas.width = Math.floor(droneVisual.width * ratio);
+            droneVisual.canvas.height = Math.floor(droneVisual.height * ratio);
+            droneVisual.ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        }
+
+        function drawGrid(ctx, width, height) {
+            ctx.save();
+            ctx.strokeStyle = "rgba(73, 99, 130, 0.16)";
+            ctx.lineWidth = 1;
+
+            for (var x = 0; x <= width; x += 48) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+
+            for (var y = 0; y <= height; y += 48) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+
+            ctx.strokeStyle = "rgba(35, 91, 150, 0.32)";
+            ctx.setLineDash([8, 10]);
+            ctx.beginPath();
+            ctx.moveTo(70, height * 0.72);
+            ctx.bezierCurveTo(width * 0.28, height * 0.38, width * 0.62, height * 0.64, width - 72, height * 0.32);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawTrail(ctx) {
+            if (droneVisual.trail.length < 2) {
+                return;
+            }
+
+            ctx.save();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "rgba(22, 130, 93, 0.45)";
+            ctx.beginPath();
+            droneVisual.trail.forEach(function (point, index) {
+                if (index === 0) {
+                    ctx.moveTo(point.x, point.y);
+                } else {
+                    ctx.lineTo(point.x, point.y);
+                }
+            });
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawRotor(ctx, x, y, phase, severity) {
+            var rotorColor = severity === "critical" ? "#d93649" : (severity === "watch" ? "#d28714" : "#16825d");
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(phase);
+            ctx.fillStyle = "rgba(21, 32, 43, 0.16)";
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 50, 9, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.rotate(Math.PI / 2);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 50, 9, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = rotorColor;
+            ctx.beginPath();
+            ctx.arc(0, 0, 9, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function roundedRectPath(ctx, x, y, width, height, radius) {
+            var r = Math.min(radius, width / 2, height / 2);
+
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + width - r, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+            ctx.lineTo(x + width, y + height - r);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+            ctx.lineTo(x + r, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+        }
+
+        function drawDrone(ctx) {
+            var profile = profileForCurrentFault();
+            var jitterX = droneVisual.shake ? (Math.random() - 0.5) * droneVisual.shake : 0;
+            var jitterY = droneVisual.shake ? (Math.random() - 0.5) * droneVisual.shake : 0;
+            var x = droneVisual.x + jitterX;
+            var y = droneVisual.y + jitterY;
+            var roll = droneVisual.roll * Math.PI / 180;
+            var packetAlpha = droneVisual.packetBlink ? 0.45 : 1;
+
+            ctx.save();
+            ctx.globalAlpha = packetAlpha;
+            ctx.translate(x, y);
+            ctx.rotate(roll);
+
+            ctx.strokeStyle = "#293847";
+            ctx.lineWidth = 8;
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(-78, -48);
+            ctx.lineTo(78, 48);
+            ctx.moveTo(78, -48);
+            ctx.lineTo(-78, 48);
+            ctx.stroke();
+
+            drawRotor(ctx, -92, -58, droneVisual.rotorPhase, profile.severity);
+            drawRotor(ctx, 92, -58, -droneVisual.rotorPhase * 1.1, profile.severity);
+            drawRotor(ctx, -92, 58, -droneVisual.rotorPhase * 0.95, profile.severity);
+            drawRotor(ctx, 92, 58, droneVisual.rotorPhase * 1.05, profile.severity);
+
+            ctx.fillStyle = "#22313f";
+            ctx.strokeStyle = "#f8fbff";
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            roundedRectPath(ctx, -46, -24, 92, 48, 12);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = profile.severity === "critical" ? "#ff5c6c" : (profile.severity === "watch" ? "#ffc857" : "#66e0b6");
+            ctx.beginPath();
+            roundedRectPath(ctx, -25, -10, 50, 20, 8);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawWarning(ctx, width) {
+            var profile = profileForCurrentFault();
+            if (profile.severity === "normal") {
+                return;
+            }
+
+            ctx.save();
+            ctx.fillStyle = profile.severity === "critical" ? "rgba(187, 45, 59, 0.9)" : "rgba(179, 107, 0, 0.9)";
+            ctx.font = "700 15px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(profile.severity === "critical" ? "FAULT RESPONSE ACTIVE" : "CAUTION RESPONSE ACTIVE", width / 2, 32);
+            ctx.restore();
+        }
+
+        function animateDrone() {
+            if (!droneVisual.ctx) {
+                return;
+            }
+
+            var ctx = droneVisual.ctx;
+            var width = droneVisual.width;
+            var height = droneVisual.height;
+
+            droneVisual.x += (droneVisual.targetX - droneVisual.x) * 0.08;
+            droneVisual.y += (droneVisual.targetY - droneVisual.y) * 0.08;
+            droneVisual.rotorPhase += 0.48 + Math.abs(droneVisual.latestGyr) * 0.18;
+
+            droneVisual.trail.push({ x: droneVisual.x, y: droneVisual.y });
+            if (droneVisual.trail.length > 90) {
+                droneVisual.trail.shift();
+            }
+
+            ctx.clearRect(0, 0, width, height);
+            drawGrid(ctx, width, height);
+            drawTrail(ctx);
+            drawDrone(ctx);
+            drawWarning(ctx, width);
+
+            requestAnimationFrame(animateDrone);
+        }
+
+        function initDroneVisual() {
+            droneVisual.canvas = document.getElementById("droneCanvas");
+            if (!droneVisual.canvas || !droneVisual.canvas.getContext) {
+                return;
+            }
+
+            droneVisual.ctx = droneVisual.canvas.getContext("2d");
+            resizeDroneCanvas();
+            droneVisual.x = droneVisual.width * 0.5;
+            droneVisual.y = droneVisual.height * 0.52;
+            droneVisual.targetX = droneVisual.x;
+            droneVisual.targetY = droneVisual.y;
+            updateDroneReadouts();
+            animateDrone();
         }
 
         function requestData()
@@ -348,6 +986,7 @@
                 chartAccX.series[0].setData(data3[1], true, true, true);
                 chartGyrX.series[0].setData(data4[1], true, true, true);
                 applyDisplayMode(data1[1], data2[1]);
+                updateDroneFromGraph(data3[1], data4[1]);
 
                 // call it again after one certain time (1000 =  1 second)
                 setTimeout(requestData, 400);
@@ -357,6 +996,9 @@
 
         $(document).ready(function()
         {
+            initDroneVisual();
+            $(window).on("resize", resizeDroneCanvas);
+
             // --------------Chart 1 ----------------------------
             chartAccX = new Highcharts.Chart({
                 chart:
@@ -460,6 +1102,9 @@
                 Center the Title
              */
             var t1 = document.querySelector("#title");
+            if (!t1) {
+                return;
+            }
             t1.classList.add("text-white");
             t1.classList.add("text-center");
             t1.classList.add("display-3");
